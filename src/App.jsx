@@ -77,6 +77,7 @@ export function App() {
               <p>Versión web por Tomas Corral Casas</p>
               <p>2026</p>
               <p>Para los aficionados al Commodore Amiga</p>
+              <p><a href={`${import.meta.env.BASE_URL}Manual-ContAmiga.pdf`} target="_blank" rel="noreferrer">Manual de uso</a></p>
             </div>
           )}
         </header>

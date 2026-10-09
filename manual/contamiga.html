@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Manual de ContAmiga</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 18mm 17mm 18mm 17mm;
+    }
+    * { box-sizing: border-box; }
+    html { font-size: 11pt; }
+    body {
+      margin: 0;
+      color: #1a1a1a;
+      font-family: Palatino, "Palatino Linotype", "Iowan Old Style", Georgia, serif;
+      line-height: 1.45;
+    }
+    h1, h2, h3 { font-weight: 600; line-height: 1.2; page-break-after: avoid; }
+    h1 { font-size: 22pt; margin: 0 0 6px; }
+    h2 { font-size: 15pt; margin: 1.4em 0 0.4em; }
+    h3 { font-size: 12.5pt; margin: 1.1em 0 0.3em; }
+    p { margin: 0 0 0.7em; }
+    ul, ol { margin: 0 0 0.8em; padding-left: 1.2em; }
+    li { margin: 0.2em 0; }
+    strong { font-weight: 600; }
+    code, .tecla {
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.92em;
+    }
+    a { color: inherit; }
+    .portada {
+      border-top: 8px solid #0073bf;
+      padding-top: 18px;
+      margin-bottom: 1.4em;
+    }
+    .portada p { margin: 0.15em 0; }
+    .pie {
+      margin-top: 0.6em;
+      color: #333;
+      font-size: 10pt;
+    }
+    .ejemplo {
+      border-left: 3px solid #0073bf;
+      padding: 0.2em 0 0.2em 0.9em;
+      margin: 0.6em 0 0.9em;
+    }
+    .ejemplo p:last-child { margin-bottom: 0; }
+    h2 + p, h3 + p { page-break-before: avoid; }
+  </style>
+</head>
+<body>
+  <header class="portada">
+    <h1>Manual de ContAmiga</h1>
+    <p>Cómo llevar una contabilidad personal con la versión web.</p>
+    <p class="pie">Programa original de Jordi Sastre para Commodore, S.A., setiembre de 1987.<br />
+    Versión web de Tomas Corral Casas, 2026, para los aficionados al Commodore Amiga.</p>
+  </header>
+
+  <h2>Qué hace el programa</h2>
+  <p>ContAmiga lleva el dinero de una casa, no el de una empresa. Hay cuentas (la caja, el banco, la tarjeta), conceptos (la nómina, el alquiler, el mercado) y anotaciones. Cada anotación dice en qué fecha salió o entró un importe, en qué cuenta, y por qué concepto.</p>
+  <p>La versión web reproduce las pantallas y las reglas de 1987. Los importes son enteros, sin céntimos. Las fechas son día y mes, sin año: el libro es de un ejercicio, y cuando quieres empezar otro se borra y se abre uno nuevo. El mes de septiembre sigue escrito <strong>Setiembre</strong>, como en el original.</p>
+  <p>Se abre en <a href="https://tcorral.github.io/contamiga-web/">https://tcorral.github.io/contamiga-web/</a>. No hay usuario ni contraseña. El libro se guarda solo en ese navegador, en ese ordenador. Si cambias de máquina, o si borras los datos del navegador, el libro no viaja solo. Para eso está la copia en Preferencias, más abajo.</p>
+  <p>Arriba a la izquierda, el menú <strong>ContAmiga</strong> enseña los créditos y este manual. Escape vuelve a la pantalla anterior. Casi todas las preguntas de sí o no se responden con <span class="tecla">S</span>, Intro, <span class="tecla">N</span> o Escape.</p>
+
+  <h2>El orden que evita líos</h2>
+  <p>El menú deja entrar anotaciones desde el primer día, pero el programa no inventa cuentas ni conceptos. Si la cuenta no existe, dice <strong>Cuenta inexistente</strong>. Si el concepto no está dado de alta, <strong>Número de Concepto incorrecto</strong>. Conviene este orden, y luego ya no se toca:</p>
+  <ol>
+    <li>Nombre de la contabilidad, en <strong>Preferencias</strong>. Sale en la cabecera y en los listados. Puede quedarse el de fábrica, CONTABILIDAD PERSONAL. Máximo 30 letras. Se guarda en mayúsculas.</li>
+    <li>Las cuentas.</li>
+    <li>Los conceptos, cada uno marcado como ingreso o como gasto.</li>
+    <li>Las anotaciones del día a día.</li>
+  </ol>
+  <p>Yo usaría claves cortas. CAJA y BANCO se leen mejor en un listado que CUENTA-CORRIENTE-1, y la clave solo admite 9 caracteres.</p>
+
+  <h2>Las cuentas</h2>
+  <p>Hay sitio para 15. En <strong>CUENTAS · Alta</strong> se pide primero la clave. En blanco, o un 0, se vuelve al menú. Si la clave ya está, el aviso es <strong>Ya existe</strong>. Si no queda hueco, <strong>Fichero lleno</strong>.</p>
+  <p>Después vienen el título (hasta 50 caracteres) y el saldo inicial. El saldo inicial es lo que ya había en esa cuenta el día que empiezas el libro: el efectivo de la caja, el saldo del banco a 1 de enero, lo que sea. No es un apunte. No lleva concepto y no cuenta como ingreso. Cabe un entero de hasta 7 cifras, positivo o negativo. Un campo vacío se toma como cero.</p>
+  <p><strong>CORRECTO</strong> pregunta <strong>OK? (S/N)</strong>. Con S la cuenta queda en la lista de la derecha. Se pueden dar de alta varias seguidas. <strong>CANCELAR</strong> sale sin guardar la que está a medias.</p>
+  <p>En <strong>Modificación</strong> se cambia el título y el saldo inicial. La clave no. Si la clave estaba mal, lo práctico es anular esa cuenta y darla de alta con la clave buena, siempre que todavía no tenga anotaciones colgando. Pulsar una cuenta de la lista rellena la clave.</p>
+  <p><strong>Anulación</strong> deja el hueco libre. El programa no impide anular una cuenta que ya tiene apuntes: la ficha desaparece y los apuntes se quedan. Esas líneas dejan de sumar en una cuenta que ya no existe, y el libro se desalinea. Anula antes los apuntes, o exporta una copia por si quieres volver atrás.</p>
+
+  <h2>Los conceptos</h2>
+  <p>Hay 30, numerados del 1 al 30. El número lo eliges tú. El 1 puede ser la nómina y el 12 el mercado. No hace falta usarlos todos, ni en orden.</p>
+  <p>En <strong>CONCEPTOS · Alta</strong> se escribe el número. 0 vuelve al menú. Un número ocupado dice <strong>Ya existe</strong>. Fuera del 1 al 30, <strong>Código Incorrecto</strong>. Luego el título, hasta 18 caracteres, y el tipo: <strong>I</strong> de ingreso o <strong>G</strong> de gasto. Cualquier otra letra se rechaza con <strong>Introducir 'I' o 'G'</strong>. La ficha enseña los doce meses. Al principio están a cero. Se irán llenando solos con las anotaciones.</p>
+  <p>La lista de la derecha va en tres columnas, del 1 al 30. Un clic en un número lo copia al campo.</p>
+  <p><strong>Modificación</strong> cambia título y tipo. Aquí está el tropiezo del programa, heredado del Amiga: si pasas un concepto de I a G, o al revés, las sumas ya hechas no se mueven solas. Hay que pasar por <strong>VARIOS · Regeneración ficheros</strong>. La propia pantalla lo dice. Si no regeneras, Saldos y el gráfico seguirán contando ese dinero en el lado viejo.</p>
+  <p><strong>Anulación</strong> vacía ese número para poder reutilizarlo. Los apuntes que lo usaban no se borran. Un concepto anulado ya no es ingreso ni gasto, así que esas líneas dejan de cuadrar con las cuentas. Si el concepto ya no te sirve pero los apuntes sí, déjalo dado de alta y simplemente no lo uses más.</p>
+
+  <h2>Anotar el día a día</h2>
+  <p><strong>ANOTACIONES · Introducción</strong> es la pantalla que se usa de verdad. Una línea tiene cinco campos: fecha, descripción, importe, cuenta y concepto. <strong>CONTINUAR</strong> comprueba la línea y pregunta OK. Con S queda grabada y aparece encima, en azul si el concepto es ingreso y en rojo si es gasto. Se pueden meter varias en la misma sesión. Fecha <span class="tecla">0</span> vuelve al menú. También CANCELAR, y también Escape.</p>
+  <p>Un campo en blanco repite el de la anotación anterior. Sirve para la compra de todos los días en la misma cuenta: dejas la fecha, la cuenta y el concepto vacíos y solo escribes la descripción y el importe. El importe <span class="tecla">0</span>, escrito a propósito, también repite el anterior si ya había uno. Si es la primera línea y dejas el importe vacío, el programa lo toma como cero.</p>
+  <p>La fecha se escribe <span class="tecla">7-10</span>, <span class="tecla">07-10</span>, <span class="tecla">7.10</span>, <span class="tecla">7/10</span> o <span class="tecla">0710</span>. Las cuatro formas acaban en 07-10. El día 31 no vale en febrero, abril, junio, setiembre ni noviembre. El 30 de febrero sí vale. El original no miraba los años bisiestos, y esta versión tampoco. No es un fallo de la web.</p>
+  <p>La descripción admite 40 caracteres. El importe, 8 cifras, con signo menos si hace falta. La cuenta es la clave, no el título. El concepto es el número.</p>
+  <p>El concepto <strong>0</strong> es un movimiento sin concepto. Mueve la cuenta y no entra en ingresos ni en gastos. Por eso el descuadre deja de ser cero, y es lo esperado. Sirve para un traspaso entre dos cuentas tuyas: 500 que salen del banco (importe −500, concepto 0) y 500 que entran en la caja (importe 500, concepto 0). Los dos descuadres se compensan. No lo uses para el súper. El súper es un gasto, con su número.</p>
+  <p>Un importe negativo en un gasto se lista luego como entrada, y al revés. Es la forma del programa de apuntar una devolución sin inventar otro concepto: el alquiler era 800 y te devuelven 50, pues un apunte de −50 en ese concepto de gasto.</p>
+  <p>Abajo siguen las listas de cuentas y de conceptos. Un clic rellena el campo, que es más seguro que acordarse del número.</p>
+  <p>Cada apunte recibe un número y ese número no se reutiliza. Si anulas el 14, el siguiente será el 15. El contador de la pantalla, «Apunte N de 1500», es la marca de agua, no cuántos quedan vivos. A los 1500 el programa dice <strong>Fichero Completo</strong> y no deja entrar más. Para un año de casa sobra. Si algún día llegas, exporta el libro y abre otro ejercicio.</p>
+
+  <h3>Corregir o anular un apunte</h3>
+  <p><strong>ANOTACIONES · Modificación</strong> pide la fecha. 0 vuelve al menú. Si ese día solo hay un apunte, lo abre. Si hay varios, lista los números y hay que escribir el que toca. 0 en ese campo vuelve a pedir la fecha.</p>
+  <p>En la ficha se escribe una letra: <strong>M</strong> modifica, <strong>A</strong> anula, <strong>R</strong> retrocede (o se deja en blanco, que hace lo mismo). Anular no pide otra confirmación. Quita el apunte y deshace su efecto en la cuenta y en el mes del concepto. Modificar abre los cinco campos. Al confirmar, el programa resta el apunte viejo y suma el nuevo, así que cambiar de cuenta, de mes o de concepto mueve el dinero de sitio.</p>
+
+  <h2>Dónde va a parar el dinero</h2>
+  <p>Cada cuenta tiene cuatro cifras. El saldo inicial lo pusiste tú. Las entradas y las salidas las acumula el programa. El saldo es inicial más entradas menos salidas.</p>
+  <p>Si el concepto es I, el importe suma en las entradas de la cuenta y en el mes de ese concepto. Si es G, suma en las salidas y en el mes del concepto. El concepto 0 no toca ningún mes: un importe positivo va a entradas y uno negativo a salidas.</p>
+  <p><strong>Beneficio</strong> es entradas menos salidas, de todas las cuentas. Si las salidas ganan, la misma cifra se llama <strong>Pérdidas</strong> y sale en rojo. El saldo inicial no entra en el beneficio. Entró en la cuenta antes de este libro.</p>
+  <p>El <strong>descuadre</strong> compara dos cuentas del mismo dinero. Por un lado, entradas menos salidas. Por otro, ingresos de los conceptos I menos gastos de los conceptos G. Si todo apunte con concepto está bien clasificado, y no hay conceptos 0 sueltos, el descuadre es 0. Si no es 0, algo no está contado en los dos sitios: un concepto 0, un concepto anulado que todavía tiene apuntes, o un cambio de I a G sin regenerar. El Balance Total lo imprime con ese nombre. No lo ignores. Es el programa diciendo que las dos sumas no cuentan lo mismo.</p>
+
+  <h2>Consultar</h2>
+  <p>Las consultas se leen en pantalla. No preguntan impresora, aunque el navegador puede imprimir la página si te hace falta.</p>
+  <p><strong>Saldos de Cuentas</strong> es la que yo miraría cada vez que termino de anotar. Una fila por cuenta: saldo inicial, entradas, salidas y saldo. Debajo, los totales y el beneficio o las pérdidas.</p>
+  <p><strong>Sumas de un Concepto</strong> enseña los doce meses de un solo concepto, y si es I o G. Hay que elegir uno. <strong>TODOS</strong> no saca un resumen: vuelve al menú. Para verlos todos juntos está el balance.</p>
+  <p><strong>Balance de Conceptos</strong> parte la pantalla en ingresos y gastos. Puedes pedir un mes o el total del año (el botón <strong>TOTAL</strong>). Abajo están los dos totales y el beneficio o las pérdidas de los conceptos, que no es exactamente el de las cuentas si hay descuadre.</p>
+  <p>El <strong>Gráfico</strong> dibuja el año de enero a diciembre. Azul, ingresos. Rojo, gastos. Negro, la diferencia acumulada: enero, luego enero más febrero, y así. La línea llega solo hasta el último mes en el que hubo ingreso o gasto. Si el libro está vacío, dice <strong>No hay datos</strong>.</p>
+
+  <h2>Listados</h2>
+  <p>Los tres primeros listados preguntan lo mismo, con pequeñas diferencias. <strong>PANTALLA</strong> lo enseña en la ventana. <strong>IMPRESORA</strong> abre el diálogo de imprimir del navegador, donde también se puede guardar un PDF. Dentro del listado, el botón <strong>IMPRESORA</strong> vuelve a abrir ese diálogo.</p>
+  <p><strong>Movto. de Cuentas</strong> puede ser de todas las cuentas o de una, y del año o de un mes. En el año completo, si la cuenta tiene saldo inicial, la primera línea es SALDO INICIAL y a partir de ahí el saldo corre. Un importe negativo cambia de columna y se imprime en positivo: una devolución de un gasto aparece en entradas. El orden es mes, día, cuenta, concepto y número de apunte.</p>
+  <p><strong>Movto. de Conceptos</strong> hace lo equivalente por concepto. El concepto 0 no sale, porque no es un concepto.</p>
+  <p><strong>Ingresos y Gastos</strong> es el diario. Otra vez se puede acotar a un mes. En el año entero, al cambiar de mes el programa mete una línea en blanco. El concepto 0 tampoco sale aquí. Al final están los totales de cada concepto, el total de ingresos, el de gastos y la diferencia.</p>
+  <p><strong>Balance Total</strong> no pregunta opciones. Avisa de que el listado va a la impresora y, si confirmas, saca el año en una tabla ancha: cada concepto de ingreso, cada concepto de gasto, las sumas, las diferencias mes a mes, luego las cuentas y un resumen con capital inicial, beneficio o pérdidas, capital actual y descuadre. En una pantalla estrecha hay que desplazarse de lado. En papel, o en el PDF del navegador con orientación horizontal, se lee mejor. Es el listado para archivar el ejercicio.</p>
+
+  <h2>Cuando las sumas no acompañan</h2>
+  <p><strong>Regeneración ficheros</strong> tira las entradas, las salidas y los meses de los conceptos, y los vuelve a calcular apunte por apunte. El saldo inicial no lo toca. Los apuntes tampoco. Pide confirmación. Al terminar dice cuántos apuntes ha releído.</p>
+  <p>Úsala después de cambiar un concepto de I a G, o si el descuadre no te cuadra y quieres estar seguro de que las sumas salen de los apuntes y no de un resto viejo. No arregla un concepto anulado: al rehacer las sumas, esos apuntes ya no tienen tipo I ni G, así que caen del lado de las entradas y el descuadre sigue. La regeneración reconstruye. No adivina.</p>
+
+  <h2>Guardar el libro y empezar otro</h2>
+  <p>Cada cambio se guarda en el navegador. No hay botón de guardar en el menú principal. <strong>Fin de programa</strong> lo recuerda, con el texto de grabación del Amiga, y deja el libro cerrado hasta que pulses CONTINUAR. Cerrar la pestaña no borra nada. Volver a abrir la dirección recupera el libro.</p>
+  <p>Si el navegador tenía un libro estropeado, ContAmiga empieza uno vacío y avisa. La copia ilegible se conserva aparte, dentro del propio navegador, pero no se reabre sola. Por eso la copia de verdad es un fichero.</p>
+  <p>En <strong>Preferencias</strong>, <strong>EXPORTAR LIBRO</strong> descarga <span class="tecla">contamiga.json</span>. Ese fichero es el libro entero: nombre, cuentas, conceptos y apuntes. Guárdalo. En otro ordenador, <strong>IMPORTAR LIBRO</strong> lo carga y sustituye al que hubiera abierto. No mezcla. Si te equivocas de fichero, el anterior solo vuelve si lo habías exportado tú.</p>
+  <p><strong>IMPORTAR DISCO AMIGA</strong> lee los ficheros del programa de 1987: <span class="tecla">PARAMETROS.SEQ</span>, <span class="tecla">CUENTAS.TAB</span>, <span class="tecla">CONCEPTOS.TAB</span> y, si hay anotaciones, <span class="tecla">APUNTES.REL</span>. Se seleccionan juntos. Sin los tres primeros, el programa dice que faltan o que no tienen el formato del disco.</p>
+  <p><strong>Borrado de ficheros</strong> vacía cuentas, conceptos y apuntes. Es para abrir un ejercicio nuevo, no para corregir una línea. Pide el nombre de la contabilidad nueva. Si lo dejas en blanco, no borra y vuelve al menú. Antes de confirmar, exporta. El programa lo dice en la propia pantalla, y tiene razón: después no hay deshacer.</p>
+
+  <h2>Los topes, juntos</h2>
+  <p>15 cuentas. 30 conceptos. 1500 apuntes. Clave de 9, título de cuenta de 50, saldo inicial de 7 cifras. Título de concepto de 18. Descripción de 40. Importe de 8 cifras. Nombre de la contabilidad de 30. Todo texto se guarda en mayúsculas. Los miles se escriben con punto: 1500 se ve 1.500.</p>
+  <p>Nada de esto se puede ampliar desde una pantalla. Son los límites del programa de 1987, y la versión web los mantiene a propósito.</p>
+</body>
+</html>
