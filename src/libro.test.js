@@ -10,7 +10,7 @@ import {
   desdeJSON, aJSON, totales,
 } from "./libro.js";
 
-const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../fixtures");
 
 function libroBase() {
   let libro = crearLibro();
