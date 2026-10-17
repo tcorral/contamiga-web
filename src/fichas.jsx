@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   MAX_APUNTES, altaConcepto, altaCuenta, anularApunte, anularConcepto, anularCuenta,
-  apuntesEnFecha, conceptoActivo, cuentasActivas, formatear, importeCampo, importeEditable, indiceCuenta,
+  apuntesEnFecha, conceptoActivo, cuentasActivas, enteroCampo, formatear, indiceCuenta,
   introducirApunte, modificarApunte, modificarConcepto, modificarCuenta,
 } from "./libro.js";
 import { useConta } from "./conta.js";
@@ -48,9 +48,9 @@ export function AltaCuenta() {
   }
 
   function guardar() {
-    const saldoInicial = importeCampo(saldo, true);
+    const saldoInicial = enteroCampo(saldo, 7, true);
     if (saldoInicial == null) {
-      alerta("El saldo inicial no es un importe en euros. Por ejemplo 1.250,00.");
+      alerta("Saldo inicial incorrecto");
       setConfirmar(false);
       return;
     }
@@ -112,14 +112,14 @@ export function ModCuenta() {
     const encontrada = libro.cuentas[idx];
     setCuenta(encontrada);
     setTitulo(encontrada.titulo);
-    setSaldo(importeEditable(encontrada.saldoInicial));
+    setSaldo(String(encontrada.saldoInicial));
     setConfirmar(false);
   }
 
   function guardar() {
-    const saldoInicial = importeCampo(saldo, true);
+    const saldoInicial = enteroCampo(saldo, 7, true);
     if (saldoInicial == null) {
-      alerta("El saldo inicial no es un importe en euros. Por ejemplo 1.250,00.");
+      alerta("Saldo inicial incorrecto");
       setConfirmar(false);
       return;
     }
@@ -338,8 +338,8 @@ export function Entrada() {
     const concEff = concepto.trim() === "" ? prev.concepto : concepto.trim();
     if (!fechaEff) return { error: "Fecha Incorrecta" };
     if (impEff === "" || impEff == null) return { error: "Importe incorrecto" };
-    const cantidad = importeCampo(String(impEff), false);
-    if (cantidad == null) return { error: "Escribe euros con hasta dos decimales, por ejemplo 12,50." };
+    const cantidad = enteroCampo(String(impEff), 8, true);
+    if (cantidad == null) return { error: "Importe incorrecto" };
     return {
       fecha: fechaEff,
       descripcion: descEff,
@@ -379,7 +379,7 @@ export function Entrada() {
     setPrev({
       fecha: hecho.apunte.fecha,
       descripcion: hecho.apunte.descripcion,
-      importe: importeEditable(hecho.apunte.importe),
+      importe: String(hecho.apunte.importe),
       cuenta: hecho.apunte.cuenta,
       concepto: String(hecho.apunte.concepto),
     });
@@ -398,17 +398,17 @@ export function Entrada() {
         <p className="cabecera-apuntes">Fecha&nbsp;&nbsp;Descripción&nbsp;&nbsp;Importe&nbsp;&nbsp;Cuenta&nbsp;&nbsp;Concepto</p>
         {hechas.map((apunte) => (
           <p key={apunte.numero} className={claseConcepto(libro, apunte.concepto)}>
-            {apunte.fecha}  {apunte.descripcion.padEnd(20, " ").slice(0, 20)}  {formatear(apunte.importe).padStart(14, " ")}  {apunte.cuenta.padEnd(9, " ")}  {String(apunte.concepto).padStart(2, " ")}  {rotulo(libro, apunte.concepto)}
+            {apunte.fecha}  {apunte.descripcion.padEnd(20, " ").slice(0, 20)}  {formatear(apunte.importe).padStart(10, " ")}  {apunte.cuenta.padEnd(9, " ")}  {String(apunte.concepto).padStart(2, " ")}  {rotulo(libro, apunte.concepto)}
           </p>
         ))}
         <div className="fila-apunte">
           <Campo etiqueta="Fecha" valor={fecha} onChange={setFecha} max={5} autoFocus ancho="8ch" />
           <Campo etiqueta="Descripción" valor={descripcion} onChange={setDescripcion} max={40} ancho="32ch" />
-          <Campo etiqueta="Importe (€)" valor={importe} onChange={setImporte} max={16} decimal ancho="16ch" />
+          <Campo etiqueta="Importe" valor={importe} onChange={setImporte} max={8} numerico ancho="12ch" />
           <Campo etiqueta="Cuenta" valor={cuenta} onChange={setCuenta} max={9} ancho="12ch" />
           <Campo etiqueta="Concepto" valor={concepto} onChange={setConcepto} max={2} numerico ancho="6ch" />
         </div>
-        <p className="ayuda">Fecha 0 vuelve al menú. El importe es en euros: 12,50 o 12.50. Un campo en blanco repite el anterior. Concepto 0 es un movimiento sin concepto. Apunte {libro.ultimoNumero} de {MAX_APUNTES}.</p>
+        <p className="ayuda">Fecha 0 vuelve al menú. Un campo en blanco repite el anterior. Concepto 0 es un movimiento sin concepto. Apunte {libro.ultimoNumero} de {MAX_APUNTES}.</p>
         <div className="acciones">
           <Gadget type="submit">CONTINUAR</Gadget>
           <Gadget onClick={() => ir("menu")}>CANCELAR</Gadget>
@@ -466,7 +466,7 @@ export function ModApunte() {
     setCampos({
       fecha: apunte.fecha,
       descripcion: apunte.descripcion,
-      importe: importeEditable(apunte.importe),
+      importe: String(apunte.importe),
       cuenta: apunte.cuenta,
       concepto: String(apunte.concepto),
     });
@@ -512,9 +512,9 @@ export function ModApunte() {
 
   function preparar(evento) {
     evento.preventDefault();
-    const cantidad = importeCampo(campos.importe, false);
+    const cantidad = enteroCampo(campos.importe, 8, true);
     if (cantidad == null) {
-      alerta("Escribe euros con hasta dos decimales, por ejemplo 12,50.");
+      alerta("Importe incorrecto");
       return;
     }
     const ensayo = modificarApunte(structuredClone(libro), actual.numero, { ...campos, importe: cantidad });
@@ -526,8 +526,8 @@ export function ModApunte() {
   }
 
   function guardar() {
-    const cantidad = importeCampo(campos.importe, false);
-    if (cantidad == null || !aplicar(modificarApunte(libro, actual.numero, { ...campos, importe: cantidad }), setLibro, alerta)) {
+    const cantidad = enteroCampo(campos.importe, 8, true);
+    if (!aplicar(modificarApunte(libro, actual.numero, { ...campos, importe: cantidad }), setLibro, alerta)) {
       setConfirmar(false);
       return;
     }
@@ -588,7 +588,7 @@ export function ModApunte() {
               <Campo valor={campos.descripcion} onChange={(valor) => setCampos({ ...campos, descripcion: valor })} max={40} ancho="36ch" />
             </Linea>
             <Linea etiqueta="Importe....:">
-              <Campo valor={campos.importe} onChange={(valor) => setCampos({ ...campos, importe: valor })} max={16} decimal ancho="16ch" />
+              <Campo valor={campos.importe} onChange={(valor) => setCampos({ ...campos, importe: valor })} max={8} numerico ancho="12ch" />
             </Linea>
             <Linea etiqueta="Cuenta.....:">
               <Campo valor={campos.cuenta} onChange={(valor) => setCampos({ ...campos, cuenta: valor })} max={9} ancho="14ch" />

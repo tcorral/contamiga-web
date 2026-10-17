@@ -478,7 +478,7 @@ export function Grafico() {
 function Dibujo({ serie }) {
   const width = 760;
   const height = 320;
-  const left = 96;
+  const left = 48;
   const right = 16;
   const top = 16;
   const bottom = 12;
@@ -494,7 +494,7 @@ function Dibujo({ serie }) {
   const span = max + Math.abs(min) || 1;
   const plotW = width - left - right;
   const plotH = height - top - bottom;
-  const x = (i) => left + (plotW * (i + 0.5)) / 12;
+  const x = (i) => left + (plotW * i) / 11;
   const y = (valor) => top + plotH - ((valor + Math.abs(min)) / span) * plotH;
   const trazo = (valores) => {
     let d = "";
@@ -506,8 +506,8 @@ function Dibujo({ serie }) {
   return (
     <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Ingresos, gastos y diferencia acumulada">
       <rect x={left} y={top} width={plotW} height={plotH} className="marco-grafico" />
-      {Array.from({ length: 11 }, (_, i) => (
-        <line key={i} x1={left + (plotW * (i + 1)) / 12} x2={left + (plotW * (i + 1)) / 12} y1={top} y2={top + plotH} className="guia" />
+      {Array.from({ length: 10 }, (_, i) => (
+        <line key={i} x1={x(i + 1)} x2={x(i + 1)} y1={top} y2={top + plotH} className="guia" />
       ))}
       <line x1={left} x2={left + plotW} y1={y(0)} y2={y(0)} className="cero" />
       <path d={trazo(serie.ingresos)} className="linea-ingresos" />
