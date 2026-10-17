@@ -7,7 +7,7 @@ import {
   crearLibro, altaCuenta, altaConcepto, introducirApunte, anularApunte, modificarApunte,
   regenerar, modificarConcepto, anularCuenta, borrarLibro, interpretarFecha, saldos,
   movimientosCuentas, diario, serieGrafico, mks, cvs, leerApuntes, importarFicherosAmiga,
-  desdeJSON, aJSON, totales,
+  desdeJSON, aJSON, totales, formatear, parseEuros, importeEditable, centimosDesdePesetas,
 } from "./libro.js";
 
 const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../fixtures");
@@ -192,6 +192,42 @@ test("importa el disco original vacío y un JSON", () => {
   assert.equal(otra.usuario, "CONTABILIDAD PERSONAL");
   assert.equal(otra.cuentas.length, 15);
   assert.equal(otra.conceptos.length, 30);
+});
+
+test("euros, céntimos y pesetas", () => {
+  assert.equal(formatear(123456), "1.234,56 €");
+  assert.equal(formatear(-50), "-0,50 €");
+  assert.equal(formatear(0), "0,00 €");
+  assert.equal(importeEditable(1250), "12,50");
+  assert.equal(parseEuros("12,50", false), 1250);
+  assert.equal(parseEuros("12.50", false), 1250);
+  assert.equal(parseEuros("1.234,56", false), 123456);
+  assert.equal(parseEuros("1.234", false), 123400);
+  assert.equal(parseEuros("-3,5", false), -350);
+  assert.equal(parseEuros("0", true), 0);
+  assert.equal(parseEuros("0", false), null);
+  assert.equal(parseEuros("12,345", false), null);
+  assert.equal(centimosDesdePesetas(166386), 100000);
+  assert.equal(centimosDesdePesetas(0), 0);
+});
+
+test("un libro antiguo pasa a céntimos una sola vez", () => {
+  const viejo = {
+    version: 1,
+    usuario: "VIEJO",
+    ultimoNumero: 1,
+    cuentas: [{ id: 1, clave: "CAJA", titulo: "Caja", saldoInicial: 1000, entradas: 1500, salidas: 0 }],
+    conceptos: [{ id: 1, titulo: "Nomina", tipo: "I", meses: [0, 0, 1500, 0, 0, 0, 0, 0, 0, 0, 0] }],
+    apuntes: [{ numero: 1, fecha: "01-03", descripcion: "Sueldo", cuenta: "CAJA", concepto: 1, importe: 1500 }],
+  };
+  const cargado = desdeJSON(viejo);
+  assert.equal(cargado.apuntes[0].importe, 150000);
+  assert.equal(cargado.cuentas[0].saldoInicial, 100000);
+  assert.equal(cargado.cuentas[0].entradas, 150000);
+  assert.equal(cargado.conceptos[0].meses[2], 150000);
+  assert.equal(formatear(cargado.apuntes[0].importe), "1.500,00 €");
+  const otra = desdeJSON(aJSON(cargado));
+  assert.equal(otra.apuntes[0].importe, 150000);
 });
 
 test("el gráfico acumula la diferencia", () => {

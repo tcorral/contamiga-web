@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { borrarLibro, cambiarUsuario, desdeJSON, importarFicherosAmiga, regenerar } from "./libro.js";
+import { aJSON, borrarLibro, cambiarUsuario, desdeJSON, importarFicherosAmiga, regenerar } from "./libro.js";
 import { useConta } from "./conta.js";
 import { Campo, Confirmar, Gadget, Linea, Ventana } from "./ui.jsx";
 
@@ -109,14 +109,7 @@ export function Preferencias() {
   }
 
   function exportar() {
-    const blob = new Blob([JSON.stringify({
-      version: 1,
-      usuario: libro.usuario,
-      ultimoNumero: libro.ultimoNumero,
-      cuentas: libro.cuentas,
-      conceptos: libro.conceptos,
-      apuntes: libro.apuntes,
-    }, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(aJSON(libro), null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const enlace = document.createElement("a");
     enlace.href = url;
@@ -190,7 +183,7 @@ export function Preferencias() {
           </label>
           <Gadget onClick={() => ir("menu")}>CANCELAR</Gadget>
         </div>
-        <p className="ayuda">El disco tiene PARAMETROS.SEQ, CUENTAS.TAB, CONCEPTOS.TAB y, si hay anotaciones, APUNTES.REL.</p>
+        <p className="ayuda">El disco tiene PARAMETROS.SEQ, CUENTAS.TAB, CONCEPTOS.TAB y, si hay anotaciones, APUNTES.REL. Las pesetas pasan a euros: 1 € = 166,386 PTA. Un libro ya guardado en esta web conserva el mismo valor de cara, ahora en euros.</p>
       </form>
     </Ventana>
   );

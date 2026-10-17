@@ -400,8 +400,9 @@ table.listado .num { text-align: right; }
 .meses-grafico {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  gap: 4px;
   margin-top: 6px;
+  margin-left: 12.6%;
+  margin-right: 2.1%;
   text-align: center;
 }
 .leyenda { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }

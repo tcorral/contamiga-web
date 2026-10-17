@@ -1,4 +1,9 @@
-export const VERSION = "1.1";
+export const VERSION = "1.2";
+export const FORMATO = 2;
+/** 999.999.999,99 €, en céntimos. */
+export const MAX_CENTIMOS = 99_999_999_999;
+/** Tipo de conversión irrevocable, Reglamento (CE) 2866/98. */
+const PESETAS_POR_EURO_MILES = 166386n;
 export const MAX_CUENTAS = 15;
 export const MAX_CONCEPTOS = 30;
 export const MAX_APUNTES = 1500;
@@ -14,7 +19,7 @@ const CLAVE_LOCAL = "contamiga.libro.v1";
 
 export function crearLibro(usuario = "CONTABILIDAD PERSONAL") {
   return {
-    version: 1,
+    version: FORMATO,
     usuario: recortar(usuario, 30) || "CONTABILIDAD PERSONAL",
     ultimoNumero: 0,
     cuentas: Array.from({ length: MAX_CUENTAS }, (_, i) => cuentaVacia(i + 1)),
@@ -97,17 +102,93 @@ export function compararApuntes(a, b) {
   return a.numero - b.numero;
 }
 
-export function formatear(n) {
-  const negativo = n < 0;
-  const digitos = String(Math.abs(Math.trunc(n)));
+function agrupado(n) {
+  const digitos = String(n);
   let salida = "";
   let resto = digitos;
   while (resto.length > 3) {
     salida = "." + resto.slice(-3) + salida;
     resto = resto.slice(0, -3);
   }
-  salida = resto + salida;
-  return negativo ? "-" + salida : salida;
+  return resto + salida;
+}
+
+/** `n` son céntimos: 1250 es 12,50 €. */
+export function formatear(n, conSimbolo = true) {
+  const negativo = n < 0;
+  const absoluto = Math.abs(Math.trunc(n));
+  const cifra = agrupado(Math.trunc(absoluto / 100)) + "," + String(absoluto % 100).padStart(2, "0");
+  const texto = conSimbolo ? cifra + " €" : cifra;
+  return negativo ? "-" + texto : texto;
+}
+
+/** Texto para volver a editar un importe, sin símbolo ni separador de miles. */
+export function importeEditable(centimos) {
+  const negativo = centimos < 0;
+  const absoluto = Math.abs(Math.trunc(centimos));
+  const texto = Math.trunc(absoluto / 100) + "," + String(absoluto % 100).padStart(2, "0");
+  return negativo ? "-" + texto : texto;
+}
+
+export function parseEuros(texto, permiteCero = true) {
+  let t = String(texto ?? "").trim()
+    .replace(/€/g, "")
+    .replace(/eur/ig, "")
+    .replace(/[\s\u00a0]/g, "");
+  if (!t) return null;
+  const negativo = t.startsWith("-");
+  if (negativo || t.startsWith("+")) t = t.slice(1);
+  if (!t) return null;
+
+  let separador = null;
+  const comas = t.split(",").length - 1;
+  const puntos = t.split(".").length - 1;
+  if (comas && puntos) {
+    separador = t.lastIndexOf(",") > t.lastIndexOf(".") ? "," : ".";
+  } else if (comas) {
+    separador = ",";
+  } else if (puntos === 1 && t.length - t.lastIndexOf(".") - 1 <= 2) {
+    separador = ".";
+  }
+
+  let enterosTexto = t;
+  let decimalesTexto = "";
+  if (separador) {
+    const corte = t.lastIndexOf(separador);
+    enterosTexto = t.slice(0, corte);
+    decimalesTexto = t.slice(corte + 1);
+  }
+  const enteros = enterosTexto.replace(/[.,]/g, "");
+  const parteEntera = enteros === "" ? "0" : enteros;
+  if (!/^\d+$/.test(parteEntera) || (decimalesTexto !== "" && !/^\d+$/.test(decimalesTexto))) return null;
+  if (decimalesTexto.length > 2) return null;
+  const unidades = Number(parteEntera);
+  if (!Number.isSafeInteger(unidades) || unidades > Math.floor(MAX_CENTIMOS / 100)) return null;
+  const decimales = Number((decimalesTexto + "00").slice(0, 2));
+  let centimos = unidades * 100 + decimales;
+  if (negativo) centimos = -centimos;
+  if (centimos === 0 && !permiteCero) return null;
+  if (Math.abs(centimos) > MAX_CENTIMOS) return null;
+  return centimos;
+}
+
+/** Un campo vacío es cero si se permite. Si no, el texto tiene que ser un importe en euros. */
+export function importeCampo(texto, permiteCero = true) {
+  const t = String(texto ?? "").trim();
+  if (t === "" || t === "-" || t === "+") return permiteCero ? 0 : null;
+  return parseEuros(t, permiteCero);
+}
+
+export function centimosDesdePesetas(pesetas) {
+  const n = Math.trunc(Number(pesetas) || 0);
+  if (n === 0) return 0;
+  const signo = n < 0 ? -1n : 1n;
+  const numerador = BigInt(Math.abs(n)) * 100000n;
+  const denominador = PESETAS_POR_EURO_MILES;
+  const cociente = numerador / denominador;
+  const resto = numerador % denominador;
+  const redondeado = resto * 2n >= denominador ? cociente + 1n : cociente;
+  return Number(signo * redondeado);
 }
 
 export function enteroCampo(texto, ancho, permiteCero = true) {
@@ -574,7 +655,7 @@ export function serieGrafico(libro) {
 
 export function aJSON(libro) {
   return {
-    version: 1,
+    version: FORMATO,
     usuario: libro.usuario,
     ultimoNumero: libro.ultimoNumero,
     cuentas: libro.cuentas,
@@ -630,7 +711,22 @@ export function desdeJSON(data) {
     .filter(Boolean);
   const maximo = libro.apuntes.reduce((m, apunte) => Math.max(m, apunte.numero), 0);
   if (libro.ultimoNumero < maximo) libro.ultimoNumero = maximo;
+  if (!(Number(data.version) >= FORMATO)) escalarACentimos(libro);
   return libro;
+}
+
+function escalarACentimos(libro) {
+  libro.cuentas = libro.cuentas.map((cuenta) => ({
+    ...cuenta,
+    saldoInicial: cuenta.saldoInicial * 100,
+    entradas: cuenta.entradas * 100,
+    salidas: cuenta.salidas * 100,
+  }));
+  libro.conceptos = libro.conceptos.map((concepto) => ({
+    ...concepto,
+    meses: concepto.meses.map((n) => n * 100),
+  }));
+  libro.apuntes = libro.apuntes.map((apunte) => ({ ...apunte, importe: apunte.importe * 100 }));
 }
 
 export function cargarLocal() {
@@ -715,9 +811,9 @@ export function importarFicherosAmiga({ parametros, cuentas, conceptos, apuntes 
       id: i + 1,
       clave: cruda === "0" ? "" : mayus(cruda, 9),
       titulo: mayus(camposC[base + 1], 50),
-      saldoInicial: enteroBASIC(camposC[base + 2]),
-      entradas: enteroBASIC(camposC[base + 3]),
-      salidas: enteroBASIC(camposC[base + 4]),
+      saldoInicial: centimosDesdePesetas(enteroBASIC(camposC[base + 2])),
+      entradas: centimosDesdePesetas(enteroBASIC(camposC[base + 3])),
+      salidas: centimosDesdePesetas(enteroBASIC(camposC[base + 4])),
     };
   }
   for (let i = 0; i < MAX_CONCEPTOS; i++) {
@@ -728,12 +824,18 @@ export function importarFicherosAmiga({ parametros, cuentas, conceptos, apuntes 
       id: i + 1,
       titulo: cruda === "0" ? "0" : mayus(cruda, 18),
       tipo: tipo === "I" || tipo === "G" ? tipo : "",
-      meses: Array.from({ length: 12 }, (_, m) => enteroBASIC(camposK[base + 2 + m])),
+      meses: Array.from({ length: 12 }, (_, m) => centimosDesdePesetas(enteroBASIC(camposK[base + 2 + m]))),
     };
   }
-  if (apuntes) libro.apuntes = leerApuntes(apuntes);
+  if (apuntes) {
+    libro.apuntes = leerApuntes(apuntes).map((apunte) => ({
+      ...apunte,
+      importe: centimosDesdePesetas(apunte.importe),
+    }));
+  }
   const maximo = libro.apuntes.reduce((m, apunte) => Math.max(m, apunte.numero), 0);
   if (libro.ultimoNumero < maximo) libro.ultimoNumero = maximo;
+  if (libro.apuntes.length) return { libro: regenerar(libro).libro };
   return { libro };
 }
 

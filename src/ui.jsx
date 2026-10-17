@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { conceptoActivo, cuentasActivas, formatear, MESES } from "./libro.js";
+import { conceptoActivo, cuentasActivas, formatear, importeCampo, MESES } from "./libro.js";
 import { useConta } from "./conta.js";
 
 export function Ventana({ titulo, azul, alSalir, children }) {
@@ -31,7 +31,7 @@ export function Gadget({ children, onClick, on = false, type = "button" }) {
   );
 }
 
-export function Campo({ valor, onChange, max = 40, numerico = false, autoFocus = false, ancho, etiqueta }) {
+export function Campo({ valor, onChange, max = 40, numerico = false, decimal = false, autoFocus = false, ancho, etiqueta }) {
   return (
     <input
       aria-label={etiqueta}
@@ -40,11 +40,14 @@ export function Campo({ valor, onChange, max = 40, numerico = false, autoFocus =
       maxLength={max}
       spellCheck={false}
       autoCapitalize={numerico ? "off" : "characters"}
-      inputMode={numerico ? "decimal" : "text"}
+      inputMode={numerico || decimal ? "decimal" : "text"}
       style={ancho ? { width: ancho } : undefined}
       onChange={(evento) => {
         let texto = evento.target.value;
-        if (numerico) {
+        if (decimal) {
+          texto = texto.replace(/[^\d.,-]/g, "");
+          texto = texto.replace(/(?!^)-/g, "");
+        } else if (numerico) {
           texto = texto.replace(/[^\d-]/g, "");
           texto = texto.replace(/(?!^)-/g, "");
         } else {
@@ -143,7 +146,7 @@ export function ListaConceptos({ onElegir }) {
 }
 
 export function FichaCuenta({ cuenta, titulo, setTitulo, saldo, setSaldo, soloLectura }) {
-  const inicial = soloLectura ? cuenta.saldoInicial : Number(String(saldo).trim() || 0) || 0;
+  const inicial = soloLectura ? cuenta.saldoInicial : (importeCampo(saldo, true) ?? 0);
   return (
     <div>
       <Linea etiqueta="CUENTA.........:">
@@ -153,7 +156,7 @@ export function FichaCuenta({ cuenta, titulo, setTitulo, saldo, setSaldo, soloLe
         {soloLectura ? cuenta.titulo : <Campo valor={titulo} onChange={setTitulo} max={50} autoFocus ancho="32ch" />}
       </Linea>
       <Linea etiqueta="SALDO INICIAL..:">
-        {soloLectura ? formatear(cuenta.saldoInicial) : <Campo valor={saldo} onChange={setSaldo} max={8} numerico ancho="12ch" />}
+        {soloLectura ? formatear(cuenta.saldoInicial) : <Campo valor={saldo} onChange={setSaldo} max={16} decimal ancho="16ch" />}
       </Linea>
       <Linea etiqueta="TOTAL ENTRADAS.:">{formatear(cuenta.entradas)}</Linea>
       <Linea etiqueta="TOTAL SALIDAS..:">{formatear(cuenta.salidas)}</Linea>
